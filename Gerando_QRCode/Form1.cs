@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Gerando_QRCode
@@ -28,27 +29,36 @@ namespace Gerando_QRCode
                 int altura = Convert.ToInt32(txtAltura.Text);
                 int inicial = Convert.ToInt32(textInicial.Text);
                 int final = Convert.ToInt32(textfinal.Text);
+                string path = txtPath.Text;
 
                 for (int cont = inicial; cont <= final; cont++)
                 {
                     string value = cont.ToString();
-                    if (cont < 10) {
-                        value = "0"+cont.ToString();
+                    if (cont < 10)
+                    {
+                        value = "0" + cont.ToString();
                     }
 
-                    picQRCode.Image = GerarQRCode(largura, altura, txtTexto.Text+"/"+value);
-                    picQRCode.Image.Save(@"c:\tmp\qrcode\" + value+".jpg", ImageFormat.Jpeg);
+                    picQRCode.Image = GerarQRCode(largura, altura, txtTexto.Text + "/" + value);
+
+                    if (!Directory.Exists(path))
+                    {
+
+                        DirectoryInfo di = Directory.CreateDirectory(path);
+                        MessageBox.Show("Diretório Criado {0}.", di.FullName);
+                    }
+                    picQRCode.Image.Save(path + value + ".jpg", ImageFormat.Jpeg);
                 }
 
                 MessageBox.Show("QrCodes Gerados com sucesso! ");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                MessageBox.Show(ex.Message,"Erro",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        public static Bitmap Converte_Texto_Para_Imagem(Bitmap bmp,string txt, string fontname, int fontsize)
+        public static Bitmap Converte_Texto_Para_Imagem(Bitmap bmp, string txt, string fontname, int fontsize,int txtEspacamento)
         {
             try
             {
@@ -60,12 +70,12 @@ namespace Gerando_QRCode
                 Font font = new Font(fontname, fontsize);
                 // Instancia o objeto Bitmap imagem novamente com o tamanho correto para o texto e fonte
                 SizeF stringSize = graphics.MeasureString(txt, font);
-                bmp = new Bitmap(bmp, (int)stringSize.Height+ bmp.Width, (int)stringSize.Height + bmp.Height);
+                bmp = new Bitmap(bmp, (int)stringSize.Height + bmp.Width, (int)stringSize.Height + bmp.Height);
                 graphics = Graphics.FromImage(bmp);
                 // Aqui temos uma outra possibilidade
                 // bmp = new Bitmap(bmp, new Size((int)graphics.MeasureString(txt, font).Width, (int)graphics.MeasureString(txt, font).Height));
                 //Desenha o texto com o formato definido
-                graphics.DrawString(txt, font, Brushes.Black, 2, height + 2);
+                graphics.DrawString(txt, font, Brushes.Black, txtEspacamento, height + 5) ;
                 font.Dispose();
                 graphics.Flush();
                 graphics.Dispose();
@@ -82,12 +92,12 @@ namespace Gerando_QRCode
             try
             {
                 var bw = new ZXing.BarcodeWriter();
-                var encOptions = new ZXing.Common.EncodingOptions() { Width = width, Height = height, Margin = 3 };
+                var encOptions = new ZXing.Common.EncodingOptions() { Width = width, Height = height, Margin = 2 };
                 bw.Options = encOptions;
                 bw.Format = ZXing.BarcodeFormat.QR_CODE;
                 var resultado = new Bitmap(bw.Write(text));
 
-                resultado = Converte_Texto_Para_Imagem(resultado, text, "Arial", 18);
+                resultado = Converte_Texto_Para_Imagem(resultado, text, "Arial", Convert.ToInt32(txtFonte.Text), Convert.ToInt32(txtEspacamento.Text));
 
                 return resultado;
             }
@@ -118,6 +128,16 @@ namespace Gerando_QRCode
         }
 
         private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Label8_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void TextBox1_TextChanged_1(object sender, EventArgs e)
         {
 
         }
